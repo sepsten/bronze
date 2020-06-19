@@ -1,0 +1,18 @@
+{
+  "name": "bronze",
+  "version": "1.0.0",
+  "description": "Static image management. Generates different formats and sizes.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "sepsten",
+  "license": "MIT",
+  "dependencies": {
+    "es6-dynamic-template": "^2.0.0",
+    "glob": "^7.1.6",
+    "glob-parent": "^5.1.1",
+    "sharp": "^0.25.4",
+    "progress": "^2.0.3"
+  }
+}
