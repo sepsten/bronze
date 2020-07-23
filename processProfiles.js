@@ -119,7 +119,8 @@ async function processProfile(profile) {
           outFile,
           outFormats,
           transform.resize
-        ).then(transformedFiles => {
+        )
+        .then(transformedFiles => {
           // Add the transform name to each file.
           transformedFiles.forEach(f => {
             f.transform = transformName;
@@ -128,6 +129,12 @@ async function processProfile(profile) {
           // Save image version info and create indexes.
           imageInfo.versions.push(...transformedFiles);
           indexImageVersions(imageInfo);
+        })
+        .catch(err => {
+          console.error("Error: Transform operation failed."
+            + "\n    Input  :" + srcFile
+            + "\n    Output :" + err.outputPath
+            + "\n    Message:" + err.sharpError);
         })
       );
     }
@@ -186,7 +193,7 @@ function writeOutputFormat(srcStream, outPath, formatMethod, opt) {
     const outFile = outPath + "." + FORMAT_EXTS[formatMethod];
     const outStream = srcStream.clone()[formatMethod](opt).toFile(outFile, (err, info) => {
       if(err)
-        reject(err);
+        reject({ sharpErr: err, outputPath: outPath, outputFormat: formatMethod });
       else {
         // Return an info object
         PGBAR.tick();
