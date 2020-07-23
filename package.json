@@ -1,6 +1,6 @@
 {
   "name": "bronze",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Static image management. Generates different formats and sizes.",
   "main": "index.js",
   "scripts": {
