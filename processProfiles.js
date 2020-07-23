@@ -73,6 +73,7 @@ async function processProfile(profile) {
   const gPromises = [];
 
   // For each file, apply transforms and save to file.
+  var sourceIndex = 0;
   for(const srcFile of srcFiles) {
     const srcPath = path.parse(srcFile),
           srcStream = sharp(),
@@ -106,6 +107,7 @@ async function processProfile(profile) {
       const outFile = fillTemplate(destTemplate, {
         sourceName: srcPath.name,
         sourceFolder: srcFolder,
+        sourceIndex,
         transformName
       });
 
@@ -132,6 +134,8 @@ async function processProfile(profile) {
 
     // Feed the source file to the Sharp stream (and its children).
     fs.createReadStream(srcFile).pipe(srcStream);
+
+    sourceIndex++;
   }
 
   await Promise.all(gPromises);
