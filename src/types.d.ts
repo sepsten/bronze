@@ -1,6 +1,7 @@
 interface BronzeConfig {
   infoFile: string;
   profiles: object;
+  dry?: boolean;
 }
 
 interface BronzeProfile {

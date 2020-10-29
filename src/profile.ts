@@ -40,6 +40,12 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
     regs[profileName] = reg;
   }
 
+  // Dry runs stop here.
+  if(cfg.dry) {
+    console.log("Dry run. Total: " + ops.length + " ops.");
+    return;
+  }
+
   // Wait for all transformations to be over.
   debug("Total: " + ops.length + " ops. Beginning...");
 
