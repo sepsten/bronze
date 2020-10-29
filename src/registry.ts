@@ -21,8 +21,9 @@ export default class BronzeImageRegistry {
   private readonly basepath: string;
 
   /**
-   * Images are indexed according to their source ID.
-   * The image source ID is the source file's path starting from the basepath.
+   * Images are indexed according to their ID.
+   * The image's ID is the source file's path starting from the basepath
+   * without the extension.
    */
   private images: BronzeImages;
 
@@ -55,9 +56,11 @@ export default class BronzeImageRegistry {
 
   /**
    * Adds an image to the registry.
+   *
+   * @param id {string} - The image ID.
    */
-  private addImage(id: string): BronzeImage {
-    let img = new BronzeImage(id, path.join(this.basepath, id));
+  private addImage(id: string, src: string): BronzeImage {
+    let img = new BronzeImage(id, src);
     this.images[id] = img;
     return img;
   }
@@ -67,19 +70,30 @@ export default class BronzeImageRegistry {
    * Assumes that the source file actually exists.
    */
   getImageFromSource(src: string): BronzeImage {
-    // Extract source ID (source file path starting from basepath).
-    const srcId = path.relative(this.basepath, src);
+    // Extract image ID (source file path starting from basepath without ext).
+    const id = this.sourcePathToID(src);
 
-    if(this.images.hasOwnProperty(srcId))
-      return this.images[srcId];
+    if(this.images.hasOwnProperty(id))
+      return this.images[id];
     else
-      return this.addImage(srcId);
+      return this.addImage(id, src);
+  }
+
+  /**
+   * Converts a source path to an image ID.
+   *
+   * @param src {string} - The original source path.
+   * @returns {string} - The image ID.
+   */
+  sourcePathToID(src: string): string {
+    let pathO = path.parse(path.relative(this.basepath, src));
+    return path.join(pathO.dir, pathO.name);
   }
 
   toObject(): object {
     let images = {};
     for(let id in this.images) {
-      images[id] = this.images[id].toObject();
+      images[this.images[id].id] = this.images[id].toObject();
     }
 
     return {
