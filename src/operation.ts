@@ -95,8 +95,23 @@ export default class BronzeOperation {
     this.image.height = data.height;
   }
 
+  /**
+   * Warning! Brightnness measures MUST be performed after all image generation
+   * operations because it will use the smallest sample.
+   *
+   * @returns {Promise<void>}
+   */
   private async measureBrightness(): Promise<void> {
-    let data = await this.getSourceStream().toColorspace("lab").toBuffer();
+    // Find smallest version
+    let smallestWidth: number = null, smallestId = null;
+    for(let versionId in this.image.versions) {
+      if(this.image.versions[versionId].width < smallestWidth || smallestWidth === null) {
+        smallestWidth = this.image.versions[versionId].width;
+        smallestId = versionId;
+      }
+    }
+
+    let data = await sharp(this.image.versions[smallestId].path).toColorspace("lab").toBuffer();
     let stats = await sharp(data).stats();
     this.image.brightness = Math.round(stats.channels[0].mean/256*100);
   }

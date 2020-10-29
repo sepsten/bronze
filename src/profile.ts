@@ -138,10 +138,12 @@ async function prepareProfile(profile:BronzeProfile, lastResult: any): Promise<[
           };
 
           await img.addVersion(transformName, formatName, outputPath, transformObj);
-          if(profile.measureBrightness) img.queueBrightnessMeasure();
         }
       }
     }
+
+    // Brightness measure must be the last operation for one source image.
+    if(profile.measureBrightness) img.queueBrightnessMeasure();
 
     ops.push(...img.unqueuePendingOps());
 

@@ -106,7 +106,7 @@ export class BronzeImage {
 
   readonly pendingOps: BronzeOperation[];
 
-  constructor(id: string, src: string, versions?: { [versionID: string]: BronzeImageVersion }, w?: number, h?: number) {
+  constructor(id: string, src: string, versions?: { [versionID: string]: BronzeImageVersion }, w?: number, h?: number, b?: number) {
     this.id = id;
     this.src = src;
     this.pendingOps = [];
@@ -120,6 +120,10 @@ export class BronzeImage {
       this.width = w;
       this.height = h;
     }
+
+    if(typeof b === "number") {
+      this.brightness = b;
+    }
   }
 
   static fromObject(id: string, data: any): BronzeImage {
@@ -130,7 +134,7 @@ export class BronzeImage {
       throw new Error("No 'versions' property");
 
     if(isImageVersionCollection(data.versions)) {
-      return new BronzeImage(id, data.src, data.versions, data.width, data.height);
+      return new BronzeImage(id, data.src, data.versions, data.width, data.height, data.brightness);
     } else {
       throw new Error("Malformed 'versions' property");
     }
@@ -204,6 +208,7 @@ export class BronzeImage {
       src: this.src,
       width: this.width,
       height: this.height,
+      brightness: this.brightness,
       versions: this.versions
     };
   };
