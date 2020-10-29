@@ -66,7 +66,13 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
     regObjs[profileName] = regs[profileName].toObject();
   }
 
-  return regObjs;
+  // Write the information JSON file used by the helper.
+  return new Promise((resolve, reject) => {
+    fs.writeFile(cfg.infoFile, JSON.stringify(regObjs), (err) => {
+      if(err) reject(err);
+      else resolve();
+    });
+  });
 }
 
 
