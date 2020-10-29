@@ -40,13 +40,11 @@ export default class BronzeHelper {
    */
   getVersionsByFormat(id: string, format: string, profile: string) {
     let img = this.getImage(id, profile);
-    if(!img.indexByFormat.hasOwnProperty(format))
-      throw new Error(`BronzeHelper: format ${format} not present for image ${id} in profile ${profile}.`);
 
     let r = [];
-    img.indexByFormat[format].forEach((index: number) => {
-      r.push(img.versions[index]);
-    });
+    for(let versionId in img.versions) {
+      if(img.versions[versionId].format === format) r.push(img.versions[versionId]);
+    }
 
     return r;
   }
@@ -56,13 +54,10 @@ export default class BronzeHelper {
    */
   getVersionsByTransform(id: string, transform: string, profile: string) {
     let img = this.getImage(id, profile);
-    if(!img.indexByTransform.hasOwnProperty(transform))
-      throw new Error(`BronzeHelper: transform ${transform} not present for image ${id} in profile ${profile}.`);
 
     let r = [];
-    for(const format in img.indexByTransform[transform]) {
-      const index = img.indexByTransform[transform][format];
-      r.push(img.versions[index]);
+    for(let versionId in img.versions) {
+      if(img.versions[versionId].transform === transform) r.push(img.versions[versionId]);
     }
 
     return r;
