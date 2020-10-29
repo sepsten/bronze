@@ -75,7 +75,7 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
 /**
  * Prepares a single profile. Returns an array of operations.
  */
-async function prepareProfile(profile:BronzeProfile, lastResult: any): Promise<[BronzeOperation[], BronzeImageRegistry]> {
+async function prepareProfile(profile:BronzeProfile, savedResult?: any): Promise<[BronzeOperation[], BronzeImageRegistry]> {
   const ops = [];
 
   // Glob all source files.
@@ -87,12 +87,12 @@ async function prepareProfile(profile:BronzeProfile, lastResult: any): Promise<[
   });
 
   // Extract the common denominator (base) from the glob pattern.
-  const sourcePathBase: string = globParent(profile.src);
+  const sourcePathBase = globParent(profile.src);
 
   let reg: BronzeImageRegistry;
-  if(lastResult) {
+  if(savedResult) {
     try {
-      reg = BronzeImageRegistry.fromObject(lastResult);
+      reg = BronzeImageRegistry.fromObject(savedResult);
     } catch(e) {
       throw e;
     }

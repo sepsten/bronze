@@ -106,6 +106,13 @@ export class BronzeImage {
 
   readonly pendingOps: BronzeOperation[];
 
+  /**
+   * @param id {string}
+   * @param src {string}
+   * @param versions
+   * @param w {number} - Optional width indicator in pixels.
+   * @param h {number} - Optional height indicator in pixels.
+   */
   constructor(id: string, src: string, versions?: { [versionID: string]: BronzeImageVersion }, w?: number, h?: number, b?: number) {
     this.id = id;
     this.src = src;
@@ -126,6 +133,13 @@ export class BronzeImage {
     }
   }
 
+  /**
+   * Instantiates a BronzeImage from JSON data.
+   *
+   * @param id {string} - The image's ID.
+   * @param data {any} - The (parsed) JSON data.
+   * @returns {BronzeImage}
+   */
   static fromObject(id: string, data: any): BronzeImage {
     if(!data.src)
       throw new Error("No 'src' property");
@@ -142,6 +156,9 @@ export class BronzeImage {
 
   /**
    * Adds a version (specific transform + specific format) to the image.
+   *
+   * @param transformName {string}
+   * @param
    */
   async addVersion(transformName: string, formatName: string, path: string, transformObj: BronzeTransform): Promise<void> {
     const versionId = transformName + "-" + formatName,
@@ -172,6 +189,14 @@ export class BronzeImage {
     }
   }
 
+  /**
+   * Adds a GENERATE operation for a specific image version-transform to the
+   * instance's queue.
+   *
+   * @private
+   * @param versionId {string} - The image version's ID (`transform-format`).
+   * @param transform {BronzeTransform}
+   */
   private queueVersionOperation(versionId: string, transform: BronzeTransform): void {
     let op = new BronzeOperation(
       BronzeOperationType.GENERATE,
@@ -189,10 +214,20 @@ export class BronzeImage {
     this.pendingOps.push(op);
   }
 
+  /**
+   * Returns the instance's operation queue.
+   *
+   * @returns {BronzeOperation[]}
+   */
   unqueuePendingOps(): BronzeOperation[] {
+    // Should also remove the operations from the queue...
     return this.pendingOps;
   }
 
+  /**
+   * Tell the instance to queue a brightness measure operation if the
+   * information is not already known.
+   */
   queueBrightnessMeasure() {
     if(!this.brightness) {
       this.pendingOps.push(new BronzeOperation(BronzeOperationType.MEASURE_BRIGHTNESS, this));
@@ -201,6 +236,8 @@ export class BronzeImage {
 
   /**
    * Creates a JSON object for export.
+   *
+   * @returns {object}
    */
   toObject(): object {
     return {
@@ -215,7 +252,7 @@ export class BronzeImage {
 }
 
 
-/**
+/*
  * Type guards
  */
 
