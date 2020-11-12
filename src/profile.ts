@@ -25,7 +25,7 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
     try {
       lastResult = JSON.parse(fs.readFileSync(cfg.infoFile, { encoding: "utf8" }));
     } catch(e) {
-      console.error("Could not parse info file " + cfg.infoFile + "\n" + e);
+      console.error("Could not parse info file " + cfg.infoFile + "\n\t" + e);
       lastResult = false;
     }
 
