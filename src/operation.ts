@@ -1,7 +1,10 @@
 import sharp from "sharp";
 import fs from "fs";
 import path from "path";
+import createDebug from "debug";
 import { BronzeImage } from "./registry";
+
+const debug = createDebug("bronze:op");
 
 export enum BronzeOperationType {
   NOOP,
@@ -77,12 +80,18 @@ export default class BronzeOperation {
     let self = this;
     let p: Promise<object> = new Promise((resolve, reject) => {
       transformedStream[self.transform.formatName](self.transform.formatOptions).toFile(self.targetPath, (err: Error, info: {}) => {
-        if(err)
+        if(err) {
+          debug("Couldn't write " + self.targetPath);
+
           // Return an object describing the error?
           reject(err);
-        else
+        }
+        else {
+          debug("Wrote " + self.targetPath);
+
           // Return an info object?
           resolve(info);
+        }
       });
     });
 
