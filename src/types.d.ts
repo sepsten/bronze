@@ -1,5 +1,5 @@
 interface BronzeConfig {
-  infoFile: string;
+  infoFile?: string;
   profiles: object;
   dry?: boolean;
 }
@@ -34,4 +34,5 @@ interface BronzeTransform {
   formatName: string;
   formatOptions: object;
   resize?: object;
+  dest?: string;
 }

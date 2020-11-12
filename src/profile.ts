@@ -21,12 +21,13 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
 
   // Read last result
   let lastResult: any;
-  try {
-    lastResult = JSON.parse(fs.readFileSync(cfg.infoFile, { encoding: "utf8" }));
-  } catch(e) {
-    console.error("Could not parse info file " + cfg.infoFile + "\n" + e);
-    lastResult = false;
-  }
+  if(cfg.infoFile)
+    try {
+      lastResult = JSON.parse(fs.readFileSync(cfg.infoFile, { encoding: "utf8" }));
+    } catch(e) {
+      console.error("Could not parse info file " + cfg.infoFile + "\n" + e);
+      lastResult = false;
+    }
 
   debug("Preparing operations...");
 
@@ -68,10 +69,13 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
 
   // Write the information JSON file used by the helper.
   return new Promise((resolve, reject) => {
-    fs.writeFile(cfg.infoFile, JSON.stringify(regObjs), (err) => {
-      if(err) reject(err);
-      else resolve();
-    });
+    if(cfg.infoFile)
+      fs.writeFile(cfg.infoFile, JSON.stringify(regObjs), (err) => {
+        if(err) reject(err);
+        else resolve();
+      });
+    else
+      resolve();
   });
 }
 
