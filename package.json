@@ -10,6 +10,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run-script build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "sepsten",
