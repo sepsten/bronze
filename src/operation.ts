@@ -14,51 +14,40 @@ export enum BronzeOperationType {
   MEASURE_BRIGHTNESS
 };
 
-export enum BronzeOperationStatus {
-  PENDING,
-  RUNNING,
-  SUCCESS,
-  FAILURE
-};
-
 export default class BronzeOperation {
   readonly type: BronzeOperationType;
   private readonly image: BronzeImage;
-  status: BronzeOperationStatus;
   readonly targetPath?: string;
   readonly transform?: BronzeTransform;
-  completeCallback: (data?: any) => void;
+  promise?: Promise<any>;
 
   constructor(type: BronzeOperationType, img: BronzeImage, target?: string, transform?: BronzeTransform) {
-    this.status = BronzeOperationStatus.PENDING;
     this.type = type;
     this.image = img;
     this.targetPath = target;
     this.transform = transform;
   }
 
-  async execute(): Promise<void> {
-    let p: Promise<any>;
+  /**
+   * Start the operation if it hasn't and return its promise.
+   */
+  run(): Promise<any> {
+    if(this.promise) return this.promise;
+
     switch(this.type) {
       case BronzeOperationType.GENERATE:
-        p = this.generateImageFile(); break;
+        this.promise = this.generateImageFile(); break;
       case BronzeOperationType.DELETE:
-        p = this.deleteImageFile(); break;
+        this.promise = this.deleteImageFile(); break;
       case BronzeOperationType.RETRIEVE_SIZE:
-        p = this.retrieveSize(); break;
+        this.promise = this.retrieveSize(); break;
       case BronzeOperationType.MEASURE_BRIGHTNESS:
-        p = this.measureBrightness();
+        this.promise = this.measureBrightness();
+      default:
+        this.promise = Promise.resolve();
     }
 
-    let self = this;
-    try {
-      const data = await p;
-      self.status = BronzeOperationStatus.SUCCESS;
-      if (this.completeCallback)
-        this.completeCallback(data);
-    } catch (err) {
-      self.status = BronzeOperationStatus.FAILURE;
-    }
+    return this.promise;
   }
 
   private deleteImageFile(): Promise<void> {

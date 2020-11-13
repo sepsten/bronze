@@ -7,7 +7,7 @@ type BronzeImages = {
   [srcId: string]: BronzeImage
 };
 
-type BronzeImageVersion = {
+export type BronzeImageVersion = {
   id: string,
   format: string;
   transform: string;
@@ -15,6 +15,7 @@ type BronzeImageVersion = {
   hash: string;
   width?: number;
   height?: number;
+  op?: BronzeOperation;
 };
 
 export default class BronzeImageRegistry {
@@ -219,11 +220,14 @@ export class BronzeImage {
       transform
     );
 
+    // Keep a reference to the operation.
+    this.versions[versionId].op = op;
+
     let self = this;
-    op.completeCallback = (info) => {
+    op.run().then((info) => {
       self.versions[versionId].width = info.width;
       self.versions[versionId].height = info.height;
-    };
+    });
 
     this.pendingOps.push(op);
   }
@@ -254,6 +258,12 @@ export class BronzeImage {
    * @returns {object}
    */
   toObject(): object {
+    // We need to remove all references to operation instances in order to avoid
+    // a circular structure.
+    for(let versionId in this.versions) {
+      delete this.versions[versionId].op;
+    }
+
     return {
       id: this.id,
       src: this.src,

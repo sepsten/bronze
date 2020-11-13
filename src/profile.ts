@@ -17,7 +17,7 @@ const debug = createDebug("bronze");
  */
 export default async function bronze(cfg: BronzeConfig, profile: string): Promise<object> {
   profile = profile || "DEFAULT";
-  const ops = [], regs = {};
+  const ops: BronzeOperation[] = [], regs = {};
 
   // Read last result
   let lastResult: any;
@@ -55,7 +55,7 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
   // Execute all operations
   const opPromises = []
   for(const op of ops) {
-    opPromises.push(op.execute().then(() => bar.tick()));
+    opPromises.push(op.run().then(() => bar.tick()));
   }
 
   // Wait for all operations to be completed
