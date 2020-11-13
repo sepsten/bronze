@@ -109,6 +109,11 @@ export default class BronzeOperation {
       }
     }
 
+    // Wait for the image to be generated
+    let op: BronzeOperation;
+    if(op = this.image.versions[smallestId].op)
+      await op.run(); // Won't trigger a re-run.
+
     let data = await sharp(this.image.versions[smallestId].path).toColorspace("lab").toBuffer();
     let stats = await sharp(data).stats();
     this.image.brightness = Math.round(stats.channels[0].mean/256*100);
