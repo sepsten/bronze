@@ -8,7 +8,7 @@ import createDebug from "debug";
 
 import * as constants from "./constants";
 import BronzeImageRegistry from "./registry";
-import BronzeOperation from "./operation";
+import { BronzeOperation, BronzeOperationType } from "./operation";
 
 const debug = createDebug("bronze");
 

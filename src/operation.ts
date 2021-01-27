@@ -10,42 +10,60 @@ export enum BronzeOperationType {
   NOOP,
   GENERATE,
   DELETE,
+  RENAME,
   RETRIEVE_SIZE,
   MEASURE_BRIGHTNESS
 };
 
-export default class BronzeOperation {
+export class BronzeOperation {
   readonly type: BronzeOperationType;
   private readonly image: BronzeImage;
+  readonly version?: string;
   readonly targetPath?: string;
   readonly transform?: BronzeTransform;
-  promise?: Promise<any>;
+  private callback?: (err?: Error, data?: any) => void;
+  readonly promise: Promise<any>;
 
-  constructor(type: BronzeOperationType, img: BronzeImage, target?: string, transform?: BronzeTransform) {
+  constructor(type: BronzeOperationType, img: BronzeImage, version?: string, target?: string, transform?: BronzeTransform) {
     this.type = type;
     this.image = img;
+    this.version = version;
     this.targetPath = target;
     this.transform = transform;
+
+    // The callback mechanism allows to have a promise before the operation is
+    // actually run.
+    const self = this;
+    this.promise = new Promise((resolve, reject) => {
+      self.callback = (err?: Error, data?: any) => {
+        if(err) reject(err);
+        else resolve(data);
+      };
+    });
   }
 
   /**
    * Start the operation if it hasn't and return its promise.
    */
   run(): Promise<any> {
-    if(this.promise) return this.promise;
-
+    let p: Promise<any>;
     switch(this.type) {
       case BronzeOperationType.GENERATE:
-        this.promise = this.generateImageFile(); break;
+        p = this.generateImageFile(); break;
       case BronzeOperationType.DELETE:
-        this.promise = this.deleteImageFile(); break;
+        p = this.deleteImageFile(); break;
+      case BronzeOperationType.RENAME:
+        p = this.renameImageFile(); break;
       case BronzeOperationType.RETRIEVE_SIZE:
-        this.promise = this.retrieveSize(); break;
+        p = this.retrieveSize(); break;
       case BronzeOperationType.MEASURE_BRIGHTNESS:
-        this.promise = this.measureBrightness();
+        p = this.measureBrightness();
       default:
-        this.promise = Promise.resolve();
+        p = Promise.resolve();
     }
+
+    // Send the result to the operation's promise through the callback.
+    p.then((d: any) => this.callback(null, d)).catch((e: Error) => this.callback(e));
 
     return this.promise;
   }
@@ -56,6 +74,20 @@ export default class BronzeOperation {
       fs.unlink(self.targetPath, (err: Error) => {
         if(err) reject(err);
         else resolve();
+      });
+    });
+  }
+
+  private renameImageFile(): Promise<void> {
+    let self = this;
+    return new Promise((resolve, reject) => {
+      fs.rename(self.image.versions[this.version].path, self.targetPath, (err: Error) => {
+        if(err) reject(err);
+        else {
+          debug("Renamed " + self.image.versions[this.version].path + " to " + self.targetPath);
+          self.image.versions[this.version].path = self.targetPath;
+          resolve();
+        }
       });
     });
   }
@@ -112,7 +144,7 @@ export default class BronzeOperation {
     // Wait for the image to be generated
     let op: BronzeOperation;
     if(op = this.image.versions[smallestId].op)
-      await op.run(); // Won't trigger a re-run.
+      await op.promise;
 
     let data = await sharp(this.image.versions[smallestId].path).toColorspace("lab").toBuffer();
     let stats = await sharp(data).stats();

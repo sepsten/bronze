@@ -1,7 +1,6 @@
 import path from "path";
 import { pathExists, hashTransformObject } from "./utils";
-import BronzeOperation from "./operation";
-import { BronzeOperationType } from "./operation";
+import { BronzeOperation, BronzeOperationType } from "./operation";
 
 type BronzeImages = {
   [srcId: string]: BronzeImage
@@ -179,19 +178,37 @@ export class BronzeImage {
     const versionId = transformName + "-" + formatName,
           transformHash = hashTransformObject(transformObj);
 
+    // Is this a new version?
     if(this.versions[versionId]) {
-      // We already have a version with the same ID.
-      this.versions[versionId].path = path;
+      // - We already have a version with the same ID.
 
-      // Output file doesn't exist or the transform has changed.
-      // => Must generate the version.
-      if(transformHash !== this.versions[versionId].hash) {
-        this.versions[versionId].hash = transformHash;
-        this.queueVersionOperation(versionId, transformObj);
-      } else if(!(await pathExists(path))) {
+      // Does a generated image already exist?
+      if(await pathExists(this.versions[versionId].path)) {
+        // - We already got a generated image.
+
+        // Has the transform changed?
+        if(transformHash !== this.versions[versionId].hash) {
+          // - New transform.
+          this.queueDeleteOperation(versionId, this.versions[versionId].path);
+          this.versions[versionId].path = path; // Update path
+          this.queueVersionOperation(versionId, transformObj);
+        } else {
+          // - Same transform.
+          // Has the path changed?
+          if(path !== this.versions[versionId].path) {
+            // - The path has changed.
+            // Rename.
+            this.queueRenameOperation(versionId, path);
+            //this.versions[versionId].path = path; // Update path
+          }
+          // - Transform and path are the same, no op.
+        }
+      } else {
+        this.versions[versionId].path = path; // Update path
         this.queueVersionOperation(versionId, transformObj);
       }
     } else {
+      // - This is a new version.
       this.versions[versionId] = {
         id: versionId,
         transform: transformName,
@@ -199,9 +216,36 @@ export class BronzeImage {
         path,
         hash: transformHash
       };
-
       this.queueVersionOperation(versionId, transformObj);
     }
+  }
+
+  private queueRenameOperation(versionId: string, newPath: string) {
+    let op = new BronzeOperation(
+      BronzeOperationType.RENAME,
+      this,
+      versionId,
+      newPath
+    );
+
+    this.pendingOps.push(op);
+  }
+
+  /**
+   * Adds a DELETE operation for the previous known image.
+   *
+   * @private
+   * @param path {string}
+   */
+  private queueDeleteOperation(versionId: string, path: string) {
+    let op = new BronzeOperation(
+      BronzeOperationType.DELETE,
+      this,
+      versionId,
+      path
+    );
+
+    this.pendingOps.push(op);
   }
 
   /**
@@ -216,6 +260,7 @@ export class BronzeImage {
     let op = new BronzeOperation(
       BronzeOperationType.GENERATE,
       this,
+      versionId,
       this.versions[versionId].path,
       transform
     );
@@ -224,7 +269,7 @@ export class BronzeImage {
     this.versions[versionId].op = op;
 
     let self = this;
-    op.run().then((info) => {
+    op.promise.then((info) => {
       self.versions[versionId].width = info.width;
       self.versions[versionId].height = info.height;
     })
