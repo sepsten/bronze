@@ -227,7 +227,8 @@ export class BronzeImage {
     op.run().then((info) => {
       self.versions[versionId].width = info.width;
       self.versions[versionId].height = info.height;
-    });
+    })
+    .catch(() => {}); // Needed to avoid uncaught promise error.
 
     this.pendingOps.push(op);
   }

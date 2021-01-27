@@ -25,7 +25,7 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
     try {
       lastResult = JSON.parse(fs.readFileSync(cfg.infoFile, { encoding: "utf8" }));
     } catch(e) {
-      console.error("Could not parse info file " + cfg.infoFile + "\n\t" + e);
+      console.error("Could not parse info file " + cfg.infoFile + "\n - " + e.message);
       lastResult = false;
     }
 
@@ -55,7 +55,15 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
   // Execute all operations
   const opPromises = []
   for(const op of ops) {
-    opPromises.push(op.run().then(() => bar.tick()));
+    opPromises.push(
+      op.run()
+      .then(() => {
+        bar.tick();
+      })
+      .catch(e => {
+        console.error("Error: failed operation\n - type: " + BronzeOperationType[op.type] + "\n - target: " + op.targetPath + "\n - message: " + e.message);
+      })
+    );
   }
 
   // Wait for all operations to be completed
