@@ -44,6 +44,9 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
   // Dry runs stop here.
   if(cfg.dry) {
     console.log("Dry run. Total: " + ops.length + " ops.");
+    for(const op of ops) {
+      debug(BronzeOperationType[op.type] + " " + op.targetPath);
+    }
     return;
   }
 
@@ -78,7 +81,7 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
   // Write the information JSON file used by the helper.
   return new Promise((resolve, reject) => {
     if(cfg.infoFile)
-      fs.writeFile(cfg.infoFile, JSON.stringify(regObjs), (err) => {
+      fs.writeFile(cfg.infoFile, JSON.stringify(regObjs, null, '  '), (err) => {
         if(err) reject(err);
         else resolve();
       });
