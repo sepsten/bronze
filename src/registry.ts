@@ -73,9 +73,14 @@ export default class BronzeImageRegistry {
     // Extract image ID (source file path starting from basepath without ext).
     const id = this.sourcePathToID(src);
 
-    if(this.images.hasOwnProperty(id))
+    if(this.images.hasOwnProperty(id)) {
+      if(this.images[id].src !== src) {
+        console.warn("Warning: extension change detected for " + id + ". Will use new extension: " + path.extname(src));
+        this.images[id].src = src;
+      }
+
       return this.images[id];
-    else
+    } else
       return this.addImage(id, src);
   }
 
@@ -108,7 +113,7 @@ export default class BronzeImageRegistry {
  */
 export class BronzeImage {
   readonly id: string;
-  readonly src: string;
+  src: string;
   versions: {
     [versionID: string]: BronzeImageVersion
   };
