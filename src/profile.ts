@@ -15,7 +15,7 @@ const debug = createDebug("bronze");
 /**
  * Run all the transformations supplied.
  */
-export default async function bronze(cfg: BronzeConfig, profile: string): Promise<object> {
+export default async function bronze(cfg: BronzeConfig, profile: string): Promise<void> {
   profile = profile || "DEFAULT";
   const ops: BronzeOperation[] = [], regs = {};
 
@@ -25,7 +25,7 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
     try {
       lastResult = JSON.parse(fs.readFileSync(cfg.infoFile, { encoding: "utf8" }));
     } catch(e) {
-      console.error("Could not parse info file " + cfg.infoFile + "\n - " + e.message);
+      console.error("Warning: will overwrite info file " + cfg.infoFile + "\n - " + e.message);
       lastResult = false;
     }
 
@@ -64,6 +64,7 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
         bar.tick();
       })
       .catch(e => {
+        //throw e
         console.error("Error: failed operation\n - type: " + BronzeOperationType[op.type] + "\n - target: " + op.targetPath + "\n - message: " + e.message);
       })
     );
@@ -81,12 +82,12 @@ export default async function bronze(cfg: BronzeConfig, profile: string): Promis
   // Write the information JSON file used by the helper.
   return new Promise((resolve, reject) => {
     if(cfg.infoFile)
-      fs.writeFile(cfg.infoFile, JSON.stringify(regObjs, null, '  '), (err) => {
+      fs.writeFile(cfg.infoFile, JSON.stringify(regObjs, null, '  '), { flag: 'w' }, (err) => {
         if(err) reject(err);
-        else resolve();
+        else resolve(null);
       });
     else
-      resolve();
+      resolve(null);
   });
 }
 

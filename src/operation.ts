@@ -190,7 +190,7 @@ function applyTransforms(op: BronzeOperation, stream: sharp.Sharp) {
 /**
  * Creates a directory and its parents if they don't exist.
  */
-function createDirIfMissing(path: string) {
+function createDirIfMissing(path: string): Promise<void> {
   return new Promise((resolve, reject) => {
     // Check if folder exists.
     fs.access(path, fs.constants.F_OK, (err: Error) => {
@@ -201,7 +201,7 @@ function createDirIfMissing(path: string) {
         });
       }
 
-      resolve();
+      resolve(null);
     });
   });
 }
