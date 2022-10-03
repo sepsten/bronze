@@ -57,7 +57,7 @@ export class BronzeOperation {
       case BronzeOperationType.RETRIEVE_SIZE:
         p = this.retrieveSize(); break;
       case BronzeOperationType.MEASURE_BRIGHTNESS:
-        p = this.measureBrightness();
+        p = this.measureBrightness(); break;
       default:
         p = Promise.resolve();
     }
@@ -149,6 +149,8 @@ export class BronzeOperation {
     let data = await sharp(this.image.versions[smallestId].path).toColorspace("lab").toBuffer();
     let stats = await sharp(data).stats();
     this.image.brightness = Math.round(stats.channels[0].mean/256*100);
+    this.image.dominant = stats.dominant;
+    debug(this.image.brightness + " " + this.image.dominant)
   }
 
   private getSourceStream(noClone?: boolean): sharp.Sharp {
