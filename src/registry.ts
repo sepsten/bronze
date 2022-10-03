@@ -122,6 +122,7 @@ export class BronzeImage {
   width?: number;
   height?: number;
   brightness?: number;
+  dominant?: object;
 
   readonly pendingOps: BronzeOperation[];
 
@@ -132,7 +133,7 @@ export class BronzeImage {
    * @param w {number} - Optional width indicator in pixels.
    * @param h {number} - Optional height indicator in pixels.
    */
-  constructor(id: string, src: string, versions?: { [versionID: string]: BronzeImageVersion }, w?: number, h?: number, b?: number) {
+  constructor(id: string, src: string, versions?: { [versionID: string]: BronzeImageVersion }, w?: number, h?: number, b?: number, d?: object) {
     this.id = id;
     this.src = src;
     this.pendingOps = [];
@@ -149,6 +150,10 @@ export class BronzeImage {
 
     if(typeof b === "number") {
       this.brightness = b;
+    }
+
+    if(typeof d === "object") {
+      this.dominant = d;
     }
   }
 
@@ -167,7 +172,7 @@ export class BronzeImage {
       throw new Error("No 'versions' property");
 
     if(isImageVersionCollection(data.versions)) {
-      return new BronzeImage(id, data.src, data.versions, data.width, data.height, data.brightness);
+      return new BronzeImage(id, data.src, data.versions, data.width, data.height, data.brightness, data.dominant);
     } else {
       throw new Error("Malformed 'versions' property");
     }
@@ -298,7 +303,7 @@ export class BronzeImage {
    * information is not already known.
    */
   queueBrightnessMeasure() {
-    if(!this.brightness) {
+    if(!this.brightness || !this.dominant) {
       this.pendingOps.push(new BronzeOperation(BronzeOperationType.MEASURE_BRIGHTNESS, this));
     }
   }
@@ -321,6 +326,7 @@ export class BronzeImage {
       width: this.width,
       height: this.height,
       brightness: this.brightness,
+      dominant: this.dominant,
       versions: this.versions
     };
   };
