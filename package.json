@@ -18,20 +18,18 @@
   "dependencies": {
     "debug": "^4.2.0",
     "es6-dynamic-template": "^2.0.0",
-    "glob": "^8.0.3",
+    "glob": "^8.1.0",
     "glob-parent": "^6.0.2",
     "progress": "^2.0.3",
-    "sharp": "^0.31.0",
-    "safe-stable-stringify": "^2.4.0"
+    "safe-stable-stringify": "^2.4.0",
+    "sharp": "^0.33.1"
   },
   "devDependencies": {
     "@types/debug": "^4.1.5",
     "@types/glob": "^8.0.0",
     "@types/glob-parent": "^5.1.0",
-    "@types/node": "^16.11.60",
+    "@types/node": "^20.10.5",
     "@types/progress": "^2.0.3",
-    "@types/sharp": "^0.31.0",
-
-    "typescript": "^4.0.3"
+    "typescript": "^5.3.3"
   }
 }
